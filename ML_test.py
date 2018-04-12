@@ -6,6 +6,9 @@ Created on Mon Apr  9 11:15:48 2018
 """
 import numpy as np
 import pandas as pd
+#import pandas_datareader.data as web  
+#import tushare as ts
+#import datetime
 #==============================================================================
 def poss_date(date):
     if len(date) == 10:
@@ -18,51 +21,39 @@ def poss_date(date):
         return date[:4]+'-0'+date[5]+'-'+date[-2:]
 data = pd.read_csv(r'C:\Users\bfyang.cephei\Desktop\CTA\data\daybar_20180204\futures_20180204.csv')
 data['tradedate'] = data['tradedate'].apply(lambda x : poss_date(x))
-data_test = data[(data['tradedate']>='2017-01-01') & (data['tradedate']<='2017-01-31')]
+data_train = data[(data['tradedate']>='2017-01-01') & (data['tradedate']<='2017-01-31')]
 #==============================================================================
-
+data_train.head()
 ## sklearn
-data_test.head()
 from sklearn import linear_model
-y_train = (data_test['close']-data_test['pre_close'])/data_test['pre_close']  
+y_train = (data_train['close']-data_train['pre_close'])/data_train['pre_close']  
 y_train = np.array(y_train.fillna(0))
-x_train = data_test[['swing','oi','open']]
+x_train = data_train[['swing','oi','open']]
 x_train = np.array(x_train.fillna(0))
-linear = linear_model.LinearRegression()
-linear.fit(x_train,y_train)
-linear.score(x_train, y_train)
-print('Coefficient: n', linear.coef_)
-print('Intercept: n', linear.intercept_)
 
-
-#Import Library
-#Import other necessary libraries like pandas, numpy...
-from sklearn import linear_model
-
-#Load Train and Test datasets
-#Identify feature and response variable(s) and values must be numeric and numpy arrays
-x_train=input_variables_values_training_datasets
-y_train=target_variables_values_training_datasets
-x_test=input_variables_values_test_datasets
+data_test = data[(data['tradedate']>='2017-02-01') & (data['tradedate']<='2017-02-31')]
+y_test = (data_test['close']-data_test['pre_close'])/data_test['pre_close']
+y_test = np.array(y_test.fillna(0))
+x_test = data_test[['swing','oi','open']]
+x_test = np.array(x_test.fillna(0))
 
 # Create linear regression object
 linear = linear_model.LinearRegression()
-
 # Train the model using the training sets and check score
-linear.fit(x_train, y_train)
+linear.fit(x_train,y_train)
 linear.score(x_train, y_train)
-
 #Equation coefficient and Intercept
-print('Coefficient: n', linear.coef_)
-print('Intercept: n', linear.intercept_)
-
+print('Coefficient: n', linear.coef_)  # 贝塔系数
+print('Intercept: n', linear.intercept_)  # 
 #Predict Output
 predicted= linear.predict(x_test)
+# correlation
+res1 = np.corrcoef(predicted,y_test)                # numpy 数组格式求相关系数
+res2 = pd.Series(predicted).corr(pd.Series(y_test))  # dataframe 数据格式求相关系数
 
 
 
-
-
+ 
 import os
 os.chdir('D:/yh_min-mfactors')
 from poss_data_format import *
